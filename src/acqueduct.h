@@ -12,6 +12,8 @@
 
 typedef struct AcqueductSocket
 {
+  char* hostname;
+  int port;
   int socketDescriptor;
 } AcqueductSocket;
 

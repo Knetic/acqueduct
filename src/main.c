@@ -1,5 +1,7 @@
 #include "acqueduct.h"
 
+inline int connectAcqueduct(char* hostname, const int port, AcqueductSocket* out);
+
 inline void displayError(const char*);
 inline addrinfo* resolveHostname(const char*, const char* port);
 inline void printAddress(addrinfo* address);
@@ -8,14 +10,35 @@ inline void displayErrorCode(const char* prefix, int code);
 int main(int argc, char** arg)
 {
   AcqueductSocket localSocket;
+  int status;
+
+  status = connectAcqueduct("localhost", 4004, &localSocket);
+  if(status != 0)
+    return status;
+
+  const char* message = "Hello, world!\n";
+
+  status = write(localSocket.socketDescriptor, message, strlen(message));
+  if(status == -1)
+  {
+    displayError("Unable to write to remote host");
+    return 20;
+  }
+  return 0;
+}
+
+inline int connectAcqueduct(char* hostname, const int port, AcqueductSocket* out)
+{
   addrinfo* remoteAddress;
+  char* portString;
   int socketDescriptor;
 
-  remoteAddress = resolveHostname("localhost", "4004");
+  portString = (char*)malloc(6);
+  snprintf(portString, 6, "%d", port);
+
+  remoteAddress = resolveHostname(hostname, portString);
   if(remoteAddress == NULL)
-  {
     return 10;
-  }
 
   socketDescriptor = socket(AF_INET, SOCK_STREAM, 0);
   if(socketDescriptor < 0)
@@ -24,13 +47,15 @@ int main(int argc, char** arg)
     return 11;
   }
 
-  localSocket.socketDescriptor = socketDescriptor;
   if(connect(socketDescriptor, remoteAddress->ai_addr, remoteAddress->ai_addrlen) < 0)
   {
     displayError("Unable to connect to remote");
     return 12;
   }
 
+  out->socketDescriptor = socketDescriptor;
+  out->hostname = hostname;
+  out->port = port;
   return 0;
 }
 
