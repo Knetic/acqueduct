@@ -24,7 +24,7 @@ int forwardAcqueductInput(const int fd, const AcqueductSocket localSocket)
       continue;
 
     status = write(localSocket.socketDescriptor, input, inputLength);
-    if(status == -1)
+    if(status < 0)
     {
       displayError("Unable to write to remote host");
       return 20;
