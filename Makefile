@@ -14,4 +14,7 @@ clean:
 	@rm -rf ./.output
 
 run: build
-	@./.output/acqueduct
+	@rm /tmp/acq
+	@mkfifo /tmp/acq
+
+	@tail -f /tmp/acq | ./.output/acqueduct

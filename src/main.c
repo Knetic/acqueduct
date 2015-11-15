@@ -16,15 +16,36 @@ int main(int argc, char** arg)
   if(status != 0)
     return status;
 
-  const char* message = "Hello, world!\n";
-
-  status = write(localSocket.socketDescriptor, message, strlen(message));
-  if(status == -1)
-  {
-    displayError("Unable to write to remote host");
-    return 20;
-  }
+  printf("Connection established, waiting for input.\n");
+  forwardInput(localSocket);
   return 0;
+}
+
+/*
+  Reads input out of stdin, zips it with gzip, and sends it across the given
+  AcqueductSocket.
+*/
+inline int forwardInput(const AcqueductSocket localSocket)
+{
+  char* input;
+  size_t inputLength;
+  int status;
+
+  input = (char*)malloc(1024);
+
+  for(;;)
+  {
+    inputLength = read(STDIN_FILENO, input, 1024);
+    if(inputLength <= 0)
+      continue;
+
+    status = write(localSocket.socketDescriptor, input, inputLength);
+    if(status == -1)
+    {
+      displayError("Unable to write to remote host");
+      return 20;
+    }
+  }
 }
 
 inline int connectAcqueduct(char* hostname, const int port, AcqueductSocket* out)
