@@ -2,7 +2,6 @@
 
 inline void displayError(const char*);
 inline addrinfo* resolveHostname(const char*, const char* port);
-inline void printAddress(addrinfo* address);
 inline void displayErrorCode(const char* prefix, int code);
 
 /*
