@@ -10,6 +10,8 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
+#include "zlib.h"
+
 typedef struct AcqueductSocket
 {
   char* hostname;

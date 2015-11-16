@@ -2,7 +2,8 @@ build: clean configure
 	@mkdir -p ./.output
 	@gcc \
 		src/* \
-		-o ./.output/acqueduct
+		-o ./.output/acqueduct \
+		-lz
 
 package: build
 	@echo "Package unimplemented."
