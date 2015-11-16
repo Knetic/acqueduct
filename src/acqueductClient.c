@@ -1,4 +1,4 @@
-#include "acqueduct.h"
+#include "_acqueduct.h"
 
 // 64k default buffer size.
 #define DEFAULT_STDIN_BUFFER_SIZE 1024*64
@@ -58,16 +58,12 @@ int forwardAcqueductInput(const int fd, const AcqueductSocket localSocket)
   }
 }
 
-int connectAcqueduct(char* hostname, const int port, AcqueductSocket* out)
+int connectAcqueduct(char* hostname, char* port, AcqueductSocket* out)
 {
   addrinfo* remoteAddress;
-  char* portString;
   int socketDescriptor;
 
-  portString = (char*)malloc(6);
-  snprintf(portString, 6, "%d", port);
-
-  remoteAddress = resolveHostname(hostname, portString);
+  remoteAddress = resolveHostname(hostname, port);
   if(remoteAddress == NULL)
     return 10;
 
