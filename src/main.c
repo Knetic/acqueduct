@@ -11,22 +11,23 @@ typedef struct RuntimeFlags
   bool isClient;
 } RuntimeFlags;
 
-inline int performAcqueductClient(const char* hostname, const char* port);
+inline int performAcqueductClient(char* hostname, char* port);
 inline int performAcqueductServer();
-inline void parseFlags(const char** args, const int argc, RuntimeFlags*);
+inline void parseFlags(char** args, int argc, RuntimeFlags*);
 
-int main(const int argc, const char** args)
+int main(int argc, char** args)
 {
   RuntimeFlags flags;
 
   parseFlags(args, argc, &flags);
+  printf("Hostname: %s\nPort: %s\n", flags.hostname, flags.port);
 
   if(flags.isClient)
     return performAcqueductClient(flags.hostname, flags.port);
   return performAcqueductServer();
 }
 
-inline int performAcqueductClient(const char* hostname, const char* port)
+inline int performAcqueductClient(char* hostname, char* port)
 {
   AcqueductSocket localSocket;
   int status;
@@ -45,27 +46,26 @@ inline int performAcqueductServer()
   return 0;
 }
 
-inline void parseFlags(const char** args, const int argc, RuntimeFlags* out)
+inline void parseFlags(char** args, int argc, RuntimeFlags* out)
 {
-  RuntimeFlags flags = *out;
-  char opt;
+  int opt;
 
-  flags.isClient = true;
-  flags.hostname = "localhost";
-  flags.port = "4004";
+  out->isClient = true;
+  out->hostname = "localhost";
+  out->port = "4004";
 
-  while ((opt = getopt(argc, args, "shp")) != -1)
+  while ((opt = getopt(argc, args, "sh:p:")) != -1)
   {
     switch (opt)
     {
       case 's':
-        flags.isClient = false;
+        out->isClient = false;
         break;
       case 'h':
-        flags.hostname = optarg;
+        out->hostname = optarg;
         break;
-      case 'w':
-        flags.port = optarg;
+      case 'p':
+        out->port = optarg;
         break;
     }
   }
