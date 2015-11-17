@@ -15,6 +15,17 @@ int connectAcqueduct(char* hostname, char* port, AcqueductSocket* out);
 
 /*
   Forwards all input from the given file descriptor through the given
-  Acqueduct socket.
+  Acqueduct socket. This is a blocking function.
 */
 int forwardAcqueductInput(const int fd, const AcqueductSocket localSocket);
+
+/*
+  Accepts connections on the given port, sending all unzipped content on stdout.
+  This is a blocking function.
+*/
+int listenAcqueduct(AcqueductSocket* acqueductSocket);
+
+/*
+  Sets up a socket on the given port, ready to listen for acqueduct requests.
+*/
+int bindAcqueduct(char* port, AcqueductSocket* out);

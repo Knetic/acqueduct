@@ -41,8 +41,17 @@ inline int performAcqueductClient(char* hostname, char* port)
   return 0;
 }
 
-inline int performAcqueductServer()
+inline int performAcqueductServer(char* port)
 {
+  AcqueductSocket localSocket;
+  int status;
+
+  status = bindAcqueduct(port, &localSocket);
+  if(status != 0)
+    return status;
+
+  printf("Socket bound, waiting for connections.\n");
+  listenAcqueduct(&localSocket);
   return 0;
 }
 

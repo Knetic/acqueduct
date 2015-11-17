@@ -21,3 +21,5 @@
 // before variable declarations.
 typedef struct sockaddr sockaddr;
 typedef struct addrinfo addrinfo;
+
+addrinfo* resolveHostname(const char*, const char* port);

@@ -4,7 +4,6 @@
 #define DEFAULT_STDIN_BUFFER_SIZE 1024*64
 
 inline void displayError(const char*);
-inline addrinfo* resolveHostname(const char*, const char* port);
 inline void displayErrorCode(const char* prefix, int code);
 
 /*
@@ -86,7 +85,7 @@ int connectAcqueduct(char* hostname, char* port, AcqueductSocket* out)
   return 0;
 }
 
-inline addrinfo* resolveHostname(const char* hostname, const char* port)
+addrinfo* resolveHostname(const char* hostname, const char* port)
 {
   addrinfo hints;
   addrinfo* result;
