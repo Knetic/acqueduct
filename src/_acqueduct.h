@@ -19,7 +19,10 @@
 
 // convenience, so that we don't need to litter code with the "struct" keyword
 // before variable declarations.
+typedef struct sockaddr_in sockaddr_in;
 typedef struct sockaddr sockaddr;
 typedef struct addrinfo addrinfo;
 
 addrinfo* resolveHostname(const char*, const char* port);
+void displayError(const char*);
+void displayErrorCode(const char* prefix, int code);

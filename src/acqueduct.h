@@ -1,3 +1,5 @@
+#define ACQUEDUCT_DEFAULT_PORT "4004"
+
 typedef struct AcqueductSocket
 {
   char* hostname;

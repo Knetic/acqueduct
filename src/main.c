@@ -1,8 +1,8 @@
-#include "acqueduct.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include "acqueduct.h"
 
 typedef struct RuntimeFlags
 {
@@ -11,9 +11,9 @@ typedef struct RuntimeFlags
   bool isClient;
 } RuntimeFlags;
 
-inline int performAcqueductClient(char* hostname, char* port);
-inline int performAcqueductServer();
-inline void parseFlags(char** args, int argc, RuntimeFlags*);
+static int performAcqueductClient(char* hostname, char* port);
+static int performAcqueductServer();
+static void parseFlags(char** args, int argc, RuntimeFlags*);
 
 int main(int argc, char** args)
 {
@@ -27,7 +27,7 @@ int main(int argc, char** args)
   return performAcqueductServer();
 }
 
-inline int performAcqueductClient(char* hostname, char* port)
+static int performAcqueductClient(char* hostname, char* port)
 {
   AcqueductSocket localSocket;
   int status;
@@ -41,7 +41,7 @@ inline int performAcqueductClient(char* hostname, char* port)
   return 0;
 }
 
-inline int performAcqueductServer(char* port)
+static int performAcqueductServer(char* port)
 {
   AcqueductSocket localSocket;
   int status;
@@ -55,13 +55,13 @@ inline int performAcqueductServer(char* port)
   return 0;
 }
 
-inline void parseFlags(char** args, int argc, RuntimeFlags* out)
+static void parseFlags(char** args, int argc, RuntimeFlags* out)
 {
   int opt;
 
   out->isClient = true;
   out->hostname = "localhost";
-  out->port = "4004";
+  out->port = ACQUEDUCT_DEFAULT_PORT;
 
   while ((opt = getopt(argc, args, "sh:p:")) != -1)
   {

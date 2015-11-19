@@ -1,8 +1,9 @@
 build: clean configure
 	@mkdir -p ./.output
 	@gcc \
-		src/* \
+		src/*.c \
 		-o ./.output/acqueduct \
+		-std=gnu99 \
 		-lz
 
 package: build
