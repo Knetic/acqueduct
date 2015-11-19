@@ -27,7 +27,7 @@ int listenAcqueduct(AcqueductSocket* acqueductSocket)
 
   for(;;)
   {
-    status = select(FD_SETSIZE, &readDescriptors, NULL, NULL, NULL);
+    status = select(connectionList->length+1, &readDescriptors, NULL, NULL, NULL);
 
     if(status == -1)
     {
@@ -79,6 +79,13 @@ int bindAcqueduct(char* port, AcqueductSocket* acqueductSocket)
   {
     displayError("Unable to bind local socket");
     return 12;
+  }
+
+  status = listen(socketDescriptor, 1024);
+  if(status != 0)
+  {
+    displayError("Unable to listen on local socket");
+    return 13;
   }
 
   acqueductSocket->hostname = "localhost";
