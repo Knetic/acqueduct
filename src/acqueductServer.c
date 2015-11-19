@@ -11,6 +11,8 @@ typedef struct AcqueductClientConnection
 
 static void receiveAcqueductData(AcqueductClientConnection* connection);
 static AcqueductClientConnection* findConnection(VoidList* list, int socketDescriptor);
+static void populateDescriptors(fd_set* readDescriptors, VoidList* connectionList);
+static void printVoidList(VoidList* list);
 
 int listenAcqueduct(AcqueductSocket* acqueductSocket)
 {
@@ -22,12 +24,18 @@ int listenAcqueduct(AcqueductSocket* acqueductSocket)
   int clientDescriptor;
   int status, i;
 
-  FD_ZERO(&readDescriptors);
-  FD_SET(acqueductSocket->socketDescriptor, &readDescriptors);
+  connectionList = createVoidList(1024);
+
+  clientConnection = (AcqueductClientConnection*)malloc(sizeof(AcqueductClientConnection));
+  clientConnection->socketDescriptor = acqueductSocket->socketDescriptor;
+  addVoidList(connectionList, clientConnection);
 
   for(;;)
   {
-    status = select(connectionList->length+1, &readDescriptors, NULL, NULL, NULL);
+    populateDescriptors(&readDescriptors, connectionList);
+    status = select(connectionList->length, &readDescriptors, NULL, NULL, NULL);
+
+    printf("Selected.\n");
 
     if(status == -1)
     {
@@ -36,11 +44,17 @@ int listenAcqueduct(AcqueductSocket* acqueductSocket)
     }
 
     for(i = 0; i < FD_SETSIZE; i++)
-      if(FD_ISSET(i, &readDescriptors))
+    {
+      clientConnection = ((AcqueductClientConnection*)connectionList->entries[i]);
+      clientDescriptor = clientConnection->socketDescriptor;
+
+      if(FD_ISSET(clientDescriptor, &readDescriptors))
       {
         // server received new connection?
         if(acqueductSocket->socketDescriptor == i)
         {
+          printf("Accepting client.\n");
+
           clientDescriptor = accept(acqueductSocket->socketDescriptor, (sockaddr*)&clientAddress, &clientAddressLength);
 
           clientConnection = (AcqueductClientConnection*)malloc(sizeof(AcqueductClientConnection));
@@ -54,6 +68,7 @@ int listenAcqueduct(AcqueductSocket* acqueductSocket)
         clientConnection = findConnection(connectionList, ((AcqueductClientConnection*)(connectionList->entries[i]))->socketDescriptor);
         receiveAcqueductData(clientConnection);
       }
+    }
   }
 
   return 0;
@@ -102,6 +117,22 @@ static void receiveAcqueductData(AcqueductClientConnection* connection)
 }
 
 /*
+  Populates the given fd_set with the contents of the given connectionList descriptors.
+*/
+static void populateDescriptors(fd_set* readDescriptors, VoidList* connectionList)
+{
+  AcqueductClientConnection* connection;
+
+  FD_ZERO(readDescriptors);
+
+  for(int i = 0; i < connectionList->length; i++)
+  {
+    connection = (AcqueductClientConnection*)connectionList->entries[i];
+    FD_SET(connection->socketDescriptor, readDescriptors);
+  }
+}
+
+/*
   Finds (and returns) the client connection by socket descriptor.
   Returns NULL if the given descriptor does not exist in the list.
 */
@@ -118,4 +149,20 @@ static AcqueductClientConnection* findConnection(VoidList* list, int socketDescr
   }
 
   return NULL;
+}
+
+static void printVoidList(VoidList* list)
+{
+  AcqueductClientConnection* connection;
+
+  printf("[");
+
+  for(int i = 0; i < list->length-1; i++)
+  {
+    connection = (AcqueductClientConnection*)list->entries[i];
+    printf("%d, ", connection->socketDescriptor);
+  }
+
+  connection = (AcqueductClientConnection*)list->entries[list->length-1];
+  printf("%d]\n", connection->socketDescriptor);
 }
