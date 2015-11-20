@@ -16,6 +16,11 @@ typedef struct AcqueductSocket
 int connectAcqueduct(char* hostname, char* port, AcqueductSocket* out);
 
 /*
+  Closes the given socket, be it client or server.
+*/
+void closeAcqueduct(AcqueductSocket* acqueductSocket);
+
+/*
   Forwards all input from the given file descriptor through the given
   Acqueduct socket. This is a blocking function.
 */

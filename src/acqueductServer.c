@@ -12,6 +12,7 @@ typedef struct AcqueductClientConnection
 } AcqueductClientConnection;
 
 static void receiveAcqueductData(AcqueductClientConnection* connection, char* clientBuffer);
+static void closeAcqueductSocket(VoidList* clientList, AcqueductClientConnection* clientConnection);
 static AcqueductClientConnection* findConnection(VoidList* list, int socketDescriptor);
 static void populateDescriptors(fd_set* readDescriptors, VoidList* connectionList);
 static void printVoidList(VoidList* list);
@@ -26,6 +27,7 @@ int listenAcqueduct(AcqueductSocket* acqueductSocket)
   char* receiveBuffer;
   int clientDescriptor;
   int status, i;
+  char peek;
 
   connectionList = createVoidList(1024);
   receiveBuffer = (char*)malloc(RECEIVE_BUFFER_SIZE);
@@ -41,7 +43,7 @@ int listenAcqueduct(AcqueductSocket* acqueductSocket)
 
     if(status == -1)
     {
-      fprintf(stderr, "Unable to wait for input");
+      displayError("Unable to wait for input");
       return 30;
     }
 
@@ -66,7 +68,18 @@ int listenAcqueduct(AcqueductSocket* acqueductSocket)
 
         // a client-connected socket received.
         clientConnection = findConnection(connectionList, ((AcqueductClientConnection*)(connectionList->entries[i]))->socketDescriptor);
-        receiveAcqueductData(clientConnection, receiveBuffer);
+        status = recv(clientConnection->socketDescriptor, &peek, 1, MSG_PEEK);
+
+        if(status > 0)
+        {
+          receiveAcqueductData(clientConnection, receiveBuffer);
+          continue;
+        }
+        if(status == 0)
+        {
+          closeAcqueductSocket(connectionList, clientConnection);
+          continue;
+        }
       }
     }
   }
@@ -110,6 +123,11 @@ int bindAcqueduct(char* port, AcqueductSocket* acqueductSocket)
   return 0;
 }
 
+void closeAcqueduct(AcqueductSocket* acqueductSocket)
+{
+  close(acqueductSocket->socketDescriptor);
+}
+
 /*
   Called when data is available on the given connection.
 */
@@ -118,7 +136,13 @@ static void receiveAcqueductData(AcqueductClientConnection* connection, char* cl
   size_t receivedData;
 
   receivedData = recv(connection->socketDescriptor, clientBuffer, RECEIVE_BUFFER_SIZE, 0);
-  printf("Received from client %d: %s\n--\n", connection->socketDescriptor, clientBuffer);
+  printf("Received from client %d: \n%s\n--\n", connection->socketDescriptor, clientBuffer);
+}
+
+static void closeAcqueductSocket(VoidList* clientList, AcqueductClientConnection* clientConnection)
+{
+  close(clientConnection->socketDescriptor);
+  removeVoidList(clientList, clientConnection);
 }
 
 /*

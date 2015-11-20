@@ -37,8 +37,10 @@ static int performAcqueductClient(char* hostname, char* port)
     return status;
 
   printf("Connection established, waiting for input.\n");
-  forwardAcqueductInput(STDIN_FILENO, localSocket);
-  return 0;
+  status = forwardAcqueductInput(STDIN_FILENO, localSocket);
+  
+  closeAcqueduct(&localSocket);
+  return status;
 }
 
 static int performAcqueductServer(char* port)
@@ -51,8 +53,10 @@ static int performAcqueductServer(char* port)
     return status;
 
   printf("Socket bound, waiting for connections.\n");
-  listenAcqueduct(&localSocket);
-  return 0;
+  status = listenAcqueduct(&localSocket);
+
+  closeAcqueduct(&localSocket);
+  return status;
 }
 
 static void parseFlags(char** args, int argc, RuntimeFlags* out)

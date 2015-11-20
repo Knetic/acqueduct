@@ -24,6 +24,8 @@ int forwardAcqueductInput(const int fd, const AcqueductSocket localSocket)
     if(inputLength <= 0)
       continue;
 
+    compressedLength = DEFAULT_STDIN_BUFFER_SIZE;
+
     // compress.
     status = compress(compressedInput, &compressedLength, input, inputLength);
     if(status != Z_OK)
