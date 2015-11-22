@@ -1,6 +1,7 @@
 Acqueduct
 ==
-
+[![Build Status](https://travis-ci.org/Knetic/acqueduct.svg?branch=master)](https://travis-ci.org/Knetic/acqueduct
+  )
 A system to ship raw data from one server to another.
 
 Motivation
@@ -29,3 +30,13 @@ Other Options
 Acqueduct is dead simple, and could probably be performed identically by an intricate bash script which handles the named pipe, zipping, netcatting, and so forth. And nobody could really fault you for deciding to do it that way.
 
 But I generally see all portions of a service as being actual code. Not scripts, not run through interpreters, but actual tested-and-in-a-repo code. Duct-taping together an Operations solution may achieve the same physical effect as Acqueduct, but at the cost of stability, maintainability, and effective error handling.
+
+Status
+==
+
+This is not ready for production. It's currently being prototyped, and extreme changes are likely to occur before an official 1.0.
+
+License
+==
+
+This project is licensed under the MIT general use license. You're free to integrate, fork, and play with this code as you feel fit without consulting the author, as long as you provide proper credit to the author in your works.
