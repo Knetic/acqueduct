@@ -57,7 +57,7 @@ int listenAcqueduct(AcqueductSocket* acqueductSocket)
 
   for(;;)
   {
-    readyEvents = epoll_wait(pollDescriptor, events, connectionList->length, -1);
+    readyEvents = epoll_wait(pollDescriptor, events, MAX_POLLED_DESCRIPTORS, -1);
 
     for(i = 0; i < readyEvents; i++)
     {
@@ -78,18 +78,22 @@ int listenAcqueduct(AcqueductSocket* acqueductSocket)
       if(event.data.fd == acqueductSocket->socketDescriptor)
       {
         clientDescriptor = accept(acqueductSocket->socketDescriptor, (sockaddr*)&clientAddress, &clientAddressLength);
-
+        if(clientDescriptor == -1)
+        {
+          displayError("Unable to accept incoming client");
+          continue;
+        }
         clientConnection = (AcqueductClientConnection*)malloc(sizeof(AcqueductClientConnection));
         clientConnection->socketDescriptor = clientDescriptor;
-
         addVoidList(connectionList, clientConnection);
+
+        setNonblockingSocket(clientDescriptor);
         addEpollDescriptor(pollDescriptor, clientDescriptor);
         continue;
       }
 
       // a client-connected socket received.
       status = recv(clientConnection->socketDescriptor, &peek, 1, MSG_PEEK);
-
       if(status == 0)
       {
         closeAcqueductSocket(connectionList, clientConnection);
@@ -198,7 +202,7 @@ static int addEpollDescriptor(int pollDescriptor, int descriptor)
 
   event.data.fd = descriptor;
   event.events = EPOLLIN | EPOLLET;
-  return epoll_ctl(descriptor, EPOLL_CTL_ADD, descriptor, &event);
+  return epoll_ctl(pollDescriptor, EPOLL_CTL_ADD, descriptor, &event);
 }
 
 /*
