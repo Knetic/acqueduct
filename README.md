@@ -1,7 +1,7 @@
 Acqueduct
 ==
-[![Build Status](https://travis-ci.org/Knetic/acqueduct.svg?branch=master)](https://travis-ci.org/Knetic/acqueduct
-  )
+[![Build Status](https://travis-ci.org/Knetic/acqueduct.svg?branch=master)](https://travis-ci.org/Knetic/acqueduct)
+
 A system to ship raw data from one server to another.
 
 Motivation
