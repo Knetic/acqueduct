@@ -1,7 +1,9 @@
 #include "_acqueduct.h"
 #include "voidlist.h"
+#include "CompressionBufferPair.h"
 
 #define RECEIVE_BUFFER_SIZE 65536
+#define RECEIVE_UNCOMPRESSED_SIZE RECEIVE_BUFFER_SIZE * 4
 
 /*
   Represents a single connection to an Acqueduct client.
@@ -11,7 +13,7 @@ typedef struct AcqueductClientConnection
   int socketDescriptor;
 } AcqueductClientConnection;
 
-static void receiveAcqueductData(AcqueductClientConnection* connection, char* clientBuffer);
+static void receiveAcqueductData(AcqueductClientConnection* connection, CompressionBufferPair* buffers);
 static void closeAcqueductSocket(VoidList* clientList, AcqueductClientConnection* clientConnection);
 static AcqueductClientConnection* findConnection(VoidList* list, int socketDescriptor);
 static void populateDescriptors(fd_set* readDescriptors, VoidList* connectionList);
@@ -23,14 +25,14 @@ int listenAcqueduct(AcqueductSocket* acqueductSocket)
   sockaddr_in clientAddress;
   VoidList* connectionList;
   AcqueductClientConnection* clientConnection;
+  CompressionBufferPair* buffers;
   socklen_t clientAddressLength;
-  char* receiveBuffer;
   int clientDescriptor;
   int status, i;
   char peek;
 
   connectionList = createVoidList(1024);
-  receiveBuffer = (char*)malloc(RECEIVE_BUFFER_SIZE);
+  buffers = createBufferPair(RECEIVE_BUFFER_SIZE, RECEIVE_UNCOMPRESSED_SIZE);
 
   clientConnection = (AcqueductClientConnection*)malloc(sizeof(AcqueductClientConnection));
   clientConnection->socketDescriptor = acqueductSocket->socketDescriptor;
@@ -72,7 +74,7 @@ int listenAcqueduct(AcqueductSocket* acqueductSocket)
 
         if(status > 0)
         {
-          receiveAcqueductData(clientConnection, receiveBuffer);
+          receiveAcqueductData(clientConnection, buffers);
           continue;
         }
         if(status == 0)
@@ -131,12 +133,14 @@ void closeAcqueduct(AcqueductSocket* acqueductSocket)
 /*
   Called when data is available on the given connection.
 */
-static void receiveAcqueductData(AcqueductClientConnection* connection, char* clientBuffer)
+static void receiveAcqueductData(AcqueductClientConnection* connection, CompressionBufferPair* buffers)
 {
-  size_t receivedData;
+  int status;
 
-  receivedData = recv(connection->socketDescriptor, clientBuffer, RECEIVE_BUFFER_SIZE, 0);
-  printf("Received from client %d: \n%s\n--\n", connection->socketDescriptor, clientBuffer);
+  buffers->actualLength = recv(connection->socketDescriptor, buffers->compressedBuffer, buffers->maxCompressedLength, 0);
+  status = uncompress(buffers->uncompressedBuffer, &buffers->actualLength, buffers->compressedBuffer, buffers->actualLength);
+
+  printf("Received from client %d: \n%s\n--\n", connection->socketDescriptor, buffers->uncompressedBuffer);
 }
 
 static void closeAcqueductSocket(VoidList* clientList, AcqueductClientConnection* clientConnection)
