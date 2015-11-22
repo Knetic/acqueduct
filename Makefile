@@ -55,3 +55,11 @@ run: build
 	@mkfifo /tmp/acq
 
 	@tail -f /tmp/acq | ./.output/acqueduct -h "localhost" -p "4004"
+
+lint: clean
+	@gcc \
+		src/*.c \
+		-Wall \
+		-o /dev/null \
+		-std=gnu99 \
+		-lz
