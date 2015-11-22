@@ -23,11 +23,13 @@ endif
 
 	@rm -f ./*.deb
 	@rm -f ./*.rpm
-	
+
 	fpm \
 		--log error \
 		-s dir \
 		-t deb \
+		-d zlib1g-dev \
+		-d zlib1g \
 		-v $(ACQ_VERSION) \
 		-n acqueduct \
 		./.output/acqueduct=/usr/local/bin/acqueduct
@@ -38,6 +40,7 @@ endif
 		--log error \
 		-s dir \
 		-t rpm \
+		-d zlib \
 		-v $(ACQ_VERSION) \
 		-n acqueduct \
 		./.output/acqueduct=/usr/local/bin/acqueduct
