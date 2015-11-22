@@ -22,6 +22,7 @@
 typedef struct sockaddr_in sockaddr_in;
 typedef struct sockaddr sockaddr;
 typedef struct addrinfo addrinfo;
+typedef struct epoll_event epoll_event;
 
 addrinfo* resolveHostname(const char*, const char* port);
 void displayError(const char*);
