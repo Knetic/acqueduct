@@ -75,17 +75,15 @@ static int makeFifo(char* path)
 {
   int status;
 
-  status = mkfifo(path, 0666);
-  if(status == -1)
-    perror("Unable to make fifo pipe");
-
   status = open(path, O_RDONLY);
   if(status < 0)
   {
-    perror("Unable to open fifo pipe");
-    return status;
-  }
+    mkfifo(path, 0666);
+    status = open(path, O_RDONLY);
 
+    if(status < 0)
+        perror("Unable to create or open fifo pipe");
+  }
   return status;
 }
 
