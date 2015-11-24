@@ -77,12 +77,15 @@ int listenAcqueduct(AcqueductSocket* acqueductSocket)
       // new connection?
       if(event.data.fd == acqueductSocket->socketDescriptor)
       {
+        clientAddressLength = 0;
+        
         clientDescriptor = accept(acqueductSocket->socketDescriptor, (sockaddr*)&clientAddress, &clientAddressLength);
         if(clientDescriptor == -1)
         {
           displayError("Unable to accept incoming client");
           continue;
         }
+
         clientConnection = (AcqueductClientConnection*)malloc(sizeof(AcqueductClientConnection));
         clientConnection->socketDescriptor = clientDescriptor;
         addVoidList(connectionList, clientConnection);
