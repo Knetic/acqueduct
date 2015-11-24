@@ -2,17 +2,24 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdbool.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include "acqueduct.h"
 
 typedef struct RuntimeFlags
 {
   char* hostname;
   char* port;
+  char* fifoPath;
   bool isClient;
 } RuntimeFlags;
 
-static int performAcqueductClient(char* hostname, char* port);
+static int performAcqueductClient(char* hostname, char* port, char* fifoPath);
 static int performAcqueductServer();
+static int makeFifo(char* path);
 static void parseFlags(char** args, int argc, RuntimeFlags*);
 
 int main(int argc, char** args)
@@ -20,25 +27,30 @@ int main(int argc, char** args)
   RuntimeFlags flags;
 
   parseFlags(args, argc, &flags);
-  printf("Hostname: %s\nPort: %s\n", flags.hostname, flags.port);
 
   if(flags.isClient)
-    return performAcqueductClient(flags.hostname, flags.port);
+    return performAcqueductClient(flags.hostname, flags.port, flags.fifoPath);
   return performAcqueductServer();
 }
 
-static int performAcqueductClient(char* hostname, char* port)
+static int performAcqueductClient(char* hostname, char* port, char* fifoPath)
 {
   AcqueductSocket localSocket;
+  int fifoDescriptor;
   int status;
 
   status = connectAcqueduct(hostname, port, &localSocket);
   if(status != 0)
     return status;
 
-  printf("Connection established, waiting for input.\n");
-  status = forwardAcqueductInput(STDIN_FILENO, localSocket);
-  
+  fifoDescriptor = makeFifo(fifoPath);
+  if(fifoDescriptor == -1)
+    return 40;
+
+  status = forwardAcqueductInput(fifoDescriptor, localSocket);
+  if(status == -1)
+    return 41;
+
   closeAcqueduct(&localSocket);
   return status;
 }
@@ -59,6 +71,24 @@ static int performAcqueductServer(char* port)
   return status;
 }
 
+static int makeFifo(char* path)
+{
+  int status;
+
+  status = mkfifo(path, 0666);
+  if(status == -1)
+    perror("Unable to make fifo pipe");
+
+  status = open(path, O_RDONLY);
+  if(status < 0)
+  {
+    perror("Unable to open fifo pipe");
+    return status;
+  }
+
+  return status;
+}
+
 static void parseFlags(char** args, int argc, RuntimeFlags* out)
 {
   int opt;
@@ -66,8 +96,9 @@ static void parseFlags(char** args, int argc, RuntimeFlags* out)
   out->isClient = true;
   out->hostname = "localhost";
   out->port = ACQUEDUCT_DEFAULT_PORT;
+  out->fifoPath = "./stdin";
 
-  while ((opt = getopt(argc, args, "sh:p:")) != -1)
+  while ((opt = getopt(argc, args, "sh:p:i:")) != -1)
   {
     switch (opt)
     {
@@ -79,6 +110,9 @@ static void parseFlags(char** args, int argc, RuntimeFlags* out)
         break;
       case 'p':
         out->port = optarg;
+        break;
+      case 'i':
+        out->fifoPath = optarg;
         break;
     }
   }
