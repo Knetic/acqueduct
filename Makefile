@@ -6,6 +6,9 @@ build: clean
 		-std=gnu99 \
 		-lz
 
+install: build
+	@cp ./.output/acqueduct /usr/local/bin/acqueduct
+	
 package: build
 
 ifeq ($(shell which fpm), )
