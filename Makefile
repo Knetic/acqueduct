@@ -1,14 +1,19 @@
+CC='gcc'
+COPTS='-std=gnu99'
+CLIBS='-lz'
+SHARED=0
+
 build: clean
 	@mkdir -p ./.output
-	@gcc \
+	@$(CC) \
 		src/*.c \
 		-o ./.output/acqueduct \
-		-std=gnu99 \
-		-lz
+		$(COPTS) \
+		$(CLIBS)
 
 install: build
 	@cp ./.output/acqueduct /usr/local/bin/acqueduct
-	
+
 package: build
 
 ifeq ($(shell which fpm), )
@@ -60,9 +65,9 @@ run: build
 	@tail -f /tmp/acq | ./.output/acqueduct -h "localhost" -p "4004"
 
 lint: clean
-	@gcc \
+	$(CC) \
 		src/*.c \
 		-Wall \
 		-o /dev/null \
-		-std=gnu99 \
-		-lz
+		$(COPTS) \
+		$(CLIBS)
