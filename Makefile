@@ -5,9 +5,11 @@ SHARED=0
 
 build: clean
 	@mkdir -p ./.output
+
 	@$(CC) \
 		src/*.c \
 		-o ./.output/acqueduct \
+		-static \
 		$(COPTS) \
 		$(CLIBS)
 
@@ -63,6 +65,9 @@ run: build
 	@mkfifo /tmp/acq
 
 	@tail -f /tmp/acq | ./.output/acqueduct -h "localhost" -p "4004"
+
+container: build
+	@docker build -t acqueduct .
 
 lint: clean
 	$(CC) \

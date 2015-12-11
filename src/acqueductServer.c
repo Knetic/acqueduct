@@ -78,7 +78,7 @@ int listenAcqueduct(AcqueductSocket* acqueductSocket)
       if(event.data.fd == acqueductSocket->socketDescriptor)
       {
         clientAddressLength = 0;
-        
+
         clientDescriptor = accept(acqueductSocket->socketDescriptor, (sockaddr*)&clientAddress, &clientAddressLength);
         if(clientDescriptor == -1)
         {
@@ -117,7 +117,7 @@ int bindAcqueduct(char* port, AcqueductSocket* acqueductSocket)
   int socketDescriptor;
   int status;
 
-  localAddress = resolveHostname("localhost", ACQUEDUCT_DEFAULT_PORT);
+  localAddress = resolveHostname("127.0.0.1", ACQUEDUCT_DEFAULT_PORT);
 
   socketDescriptor = socket(localAddress->ai_family, localAddress->ai_socktype, 0);
   if(socketDescriptor < 0)

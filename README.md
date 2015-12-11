@@ -31,6 +31,20 @@ Acqueduct is dead simple, and could probably be performed identically by an intr
 
 But I generally see all portions of a service as being actual code. Not scripts, not run through interpreters, but actual tested-and-in-a-repo code. Duct-taping together an Operations solution may achieve the same physical effect as Acqueduct, but at the cost of stability, maintainability, and effective error handling.
 
+Building
+==
+
+To build, just set your working directory to the project root and run
+
+    make
+
+This project requires `libz`, which requires the libz headers. If you're on a Debian-based system, you probably need `zlib1g-dev` installed.
+
+This project also comes with a _very_ minimal Dockerfile that creates an `acqueduct` container, using an [Alpine Linux](http://www.alpinelinux.org/) base. To use, just try;
+
+    make container
+    docker run acqueduct
+
 Status
 ==
 
