@@ -117,7 +117,7 @@ int bindAcqueduct(char* port, AcqueductSocket* acqueductSocket)
   int socketDescriptor;
   int status;
 
-  localAddress = resolveHostname("127.0.0.1", ACQUEDUCT_DEFAULT_PORT);
+  localAddress = resolveHostname("0.0.0.0", ACQUEDUCT_DEFAULT_PORT);
 
   socketDescriptor = socket(localAddress->ai_family, localAddress->ai_socktype, 0);
   if(socketDescriptor < 0)
@@ -125,6 +125,10 @@ int bindAcqueduct(char* port, AcqueductSocket* acqueductSocket)
     displayError("Unable to open local socket");
     return 11;
   }
+
+  setsockopt(socketDescriptor, SOL_SOCKET, SO_REUSEADDR, &status, sizeof(status));
+  setsockopt(socketDescriptor, SOL_SOCKET, SO_REUSEPORT, &status, sizeof(status));
+  // swallow error. Maybe it'll work anyway.
 
   status = bind(socketDescriptor, localAddress->ai_addr, localAddress->ai_addrlen);
   if(status != 0)
