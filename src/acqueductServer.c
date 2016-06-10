@@ -164,7 +164,7 @@ static void receiveAcqueductData(AcqueductClientConnection* connection, Compress
   int status;
 
   buffers->actualLength = recv(connection->socketDescriptor, buffers->compressedBuffer, buffers->maxCompressedLength, 0);
-  status = uncompress(buffers->uncompressedBuffer, &buffers->actualLength, buffers->compressedBuffer, buffers->actualLength);
+  status = uncompress(buffers->uncompressedBuffer, &buffers->maxUncompressedLength, buffers->compressedBuffer, buffers->actualLength);
 
   printf("Received from client %d: \n%s\n--\n", connection->socketDescriptor, buffers->uncompressedBuffer);
 }
