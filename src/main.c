@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <signal.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -22,6 +23,9 @@ static int performAcqueductServer();
 static int makeFifo(char* path);
 static void parseFlags(char** args, int argc, RuntimeFlags*);
 
+static void handleSignals();
+static void sigpipeHandler();
+
 int main(int argc, char** args)
 {
   RuntimeFlags flags;
@@ -29,7 +33,10 @@ int main(int argc, char** args)
   parseFlags(args, argc, &flags);
 
   if(flags.isClient)
+  {
+    handleSignals();
     return performAcqueductClient(flags.hostname, flags.port, flags.fifoPath);
+  }
   return performAcqueductServer();
 }
 
@@ -48,10 +55,11 @@ static int performAcqueductClient(char* hostname, char* port, char* fifoPath)
     return 40;
 
   status = forwardAcqueductInput(fifoDescriptor, localSocket);
+  closeAcqueduct(&localSocket);
+
   if(status == -1)
     return 41;
 
-  closeAcqueduct(&localSocket);
   return status;
 }
 
@@ -114,4 +122,26 @@ static void parseFlags(char** args, int argc, RuntimeFlags* out)
         break;
     }
   }
+}
+
+/*
+  Sets up signal handlers for any cases where we need to do something.
+  Currently only handles SIGPIPE, so that we get broken pipe errors when sending.
+*/
+static void handleSignals()
+{
+  struct sigaction* signalAction;
+
+  signalAction = malloc(sizeof(struct sigaction));
+
+  signalAction->sa_handler = sigpipeHandler;
+  sigemptyset(&signalAction->sa_mask);
+  signalAction->sa_flags = 0;
+  sigaction(SIGPIPE, signalAction, (struct sigaction*)NULL);
+}
+
+static void sigpipeHandler()
+{
+  // no-op, only here to make sure the SIGPIPE is handled.
+  // Clients will get a "broken pipe" errno when they try to send.
 }
