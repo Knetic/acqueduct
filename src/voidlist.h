@@ -1,8 +1,8 @@
 typedef struct VoidList
 {
-  void** entries;
-  int capacity;
-  int length;
+	void** entries;
+	int capacity;
+	int length;
 } VoidList;
 
 VoidList* createVoidList(int capacity);

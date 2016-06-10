@@ -2,13 +2,13 @@
 
 CompressionBufferPair* createBufferPair(const int compressedLength, const int uncompressedLength)
 {
-  CompressionBufferPair* ret;
+	CompressionBufferPair* ret;
 
-  ret = (CompressionBufferPair*)malloc(sizeof(CompressionBufferPair));
-  ret->compressedBuffer   = (char*)malloc(sizeof(char) * compressedLength);
-  ret->uncompressedBuffer = (char*)malloc(sizeof(char) * uncompressedLength);
-  ret->maxCompressedLength   = compressedLength;
-  ret->maxUncompressedLength = uncompressedLength;
+	ret = (CompressionBufferPair*)malloc(sizeof(CompressionBufferPair));
+	ret->compressedBuffer   = (char*)malloc(sizeof(char) * compressedLength);
+	ret->uncompressedBuffer = (char*)malloc(sizeof(char) * uncompressedLength);
+	ret->maxCompressedLength   = compressedLength;
+	ret->maxUncompressedLength = uncompressedLength;
 
-  return ret;
+	return ret;
 }

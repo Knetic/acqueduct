@@ -12,10 +12,10 @@
 
 typedef struct RuntimeFlags
 {
-  char* hostname;
-  char* port;
-  char* fifoPath;
-  bool isClient;
+	char* hostname;
+	char* port;
+	char* fifoPath;
+	bool isClient;
 } RuntimeFlags;
 
 static int performAcqueductClient(char* hostname, char* port, char* fifoPath);
@@ -28,120 +28,120 @@ static void sigpipeHandler();
 
 int main(int argc, char** args)
 {
-  RuntimeFlags flags;
+	RuntimeFlags flags;
 
-  parseFlags(args, argc, &flags);
+	parseFlags(args, argc, &flags);
 
-  if(flags.isClient)
-  {
-    handleSignals();
-    return performAcqueductClient(flags.hostname, flags.port, flags.fifoPath);
-  }
-  return performAcqueductServer();
+	if(flags.isClient)
+	{
+		handleSignals();
+		return performAcqueductClient(flags.hostname, flags.port, flags.fifoPath);
+	}
+	return performAcqueductServer();
 }
 
 static int performAcqueductClient(char* hostname, char* port, char* fifoPath)
 {
-  AcqueductSocket localSocket;
-  int fifoDescriptor;
-  int status;
+	AcqueductSocket localSocket;
+	int fifoDescriptor;
+	int status;
 
-  status = connectAcqueduct(hostname, port, &localSocket);
-  if(status != 0)
-    return status;
+	status = connectAcqueduct(hostname, port, &localSocket);
+	if(status != 0)
+		return status;
 
-  fifoDescriptor = makeFifo(fifoPath);
-  if(fifoDescriptor == -1)
-    return 40;
+	fifoDescriptor = makeFifo(fifoPath);
+	if(fifoDescriptor == -1)
+		return 40;
 
-  status = forwardAcqueductInput(fifoDescriptor, localSocket);
-  closeAcqueduct(&localSocket);
+	status = forwardAcqueductInput(fifoDescriptor, localSocket);
+	closeAcqueduct(&localSocket);
 
-  if(status == -1)
-    return 41;
+	if(status == -1)
+		return 41;
 
-  return status;
+	return status;
 }
 
 static int performAcqueductServer(char* port)
 {
-  AcqueductSocket localSocket;
-  int status;
+	AcqueductSocket localSocket;
+	int status;
 
-  status = bindAcqueduct(port, &localSocket);
-  if(status != 0)
-    return status;
+	status = bindAcqueduct(port, &localSocket);
+	if(status != 0)
+		return status;
 
-  printf("Socket bound, waiting for connections.\n");
-  status = listenAcqueduct(&localSocket);
+	printf("Socket bound, waiting for connections.\n");
+	status = listenAcqueduct(&localSocket);
 
-  closeAcqueduct(&localSocket);
-  return status;
+	closeAcqueduct(&localSocket);
+	return status;
 }
 
 static int makeFifo(char* path)
 {
-  int status;
+	int status;
 
-  status = open(path, O_RDONLY);
-  if(status < 0)
-  {
-    mkfifo(path, 0666);
-    status = open(path, O_RDONLY);
+	status = open(path, O_RDONLY);
+	if(status < 0)
+	{
+		mkfifo(path, 0666);
+		status = open(path, O_RDONLY);
 
-    if(status < 0)
-        perror("Unable to create or open fifo pipe");
-  }
-  return status;
+		if(status < 0)
+				perror("Unable to create or open fifo pipe");
+	}
+	return status;
 }
 
 static void parseFlags(char** args, int argc, RuntimeFlags* out)
 {
-  int opt;
+	int opt;
 
-  out->isClient = true;
-  out->hostname = "localhost";
-  out->port = ACQUEDUCT_DEFAULT_PORT;
-  out->fifoPath = "./stdin";
+	out->isClient = true;
+	out->hostname = "localhost";
+	out->port = ACQUEDUCT_DEFAULT_PORT;
+	out->fifoPath = "./stdin";
 
-  while ((opt = getopt(argc, args, "sh:p:i:")) != -1)
-  {
-    switch (opt)
-    {
-      case 's':
-        out->isClient = false;
-        break;
-      case 'h':
-        out->hostname = optarg;
-        break;
-      case 'p':
-        out->port = optarg;
-        break;
-      case 'i':
-        out->fifoPath = optarg;
-        break;
-    }
-  }
+	while ((opt = getopt(argc, args, "sh:p:i:")) != -1)
+	{
+		switch (opt)
+		{
+			case 's':
+				out->isClient = false;
+				break;
+			case 'h':
+				out->hostname = optarg;
+				break;
+			case 'p':
+				out->port = optarg;
+				break;
+			case 'i':
+				out->fifoPath = optarg;
+				break;
+		}
+	}
 }
 
 /*
-  Sets up signal handlers for any cases where we need to do something.
-  Currently only handles SIGPIPE, so that we get broken pipe errors when sending.
+	Sets up signal handlers for any cases where we need to do something.
+	Currently only handles SIGPIPE, so that we get broken pipe errors when sending.
 */
 static void handleSignals()
 {
-  struct sigaction* signalAction;
+	struct sigaction* signalAction;
 
-  signalAction = malloc(sizeof(struct sigaction));
+	signalAction = malloc(sizeof(struct sigaction));
 
-  signalAction->sa_handler = sigpipeHandler;
-  sigemptyset(&signalAction->sa_mask);
-  signalAction->sa_flags = 0;
-  sigaction(SIGPIPE, signalAction, (struct sigaction*)NULL);
+	signalAction->sa_handler = sigpipeHandler;
+	sigemptyset(&signalAction->sa_mask);
+	signalAction->sa_flags = 0;
+	sigaction(SIGPIPE, signalAction, (struct sigaction*)NULL);
 }
 
 static void sigpipeHandler()
 {
-  // no-op, only here to make sure the SIGPIPE is handled.
-  // Clients will get a "broken pipe" errno when they try to send.
+	// no-op, only here to make sure the SIGPIPE is handled.
+	// Clients will get a "broken pipe" errno when they try to send.
 }
