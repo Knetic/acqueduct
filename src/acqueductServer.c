@@ -126,9 +126,12 @@ int bindAcqueduct(char* port, AcqueductSocket* acqueductSocket)
     return 11;
   }
 
-  setsockopt(socketDescriptor, SOL_SOCKET, SO_REUSEADDR, &status, sizeof(status));
-  setsockopt(socketDescriptor, SOL_SOCKET, SO_REUSEPORT, &status, sizeof(status));
-  // swallow error. Maybe it'll work anyway.
+  #ifdef SO_REUSEADDR
+  	setsockopt(socketDescriptor, SOL_SOCKET, SO_REUSEADDR, &status, sizeof(status));
+  #endif
+  #ifdef SO_REUSEPORT
+    setsockopt(socketDescriptor, SOL_SOCKET, SO_REUSEPORT, &status, sizeof(status));
+  #endif
 
   status = bind(socketDescriptor, localAddress->ai_addr, localAddress->ai_addrlen);
   if(status != 0)
