@@ -9,7 +9,6 @@ build: clean
 	@$(CC) \
 		src/*.c \
 		-o ./.output/acqueduct \
-		-static \
 		$(COPTS) \
 		$(CLIBS)
 
